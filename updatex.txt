@@ -1,0 +1,6 @@
+update these things in the given screenshot. also have it so that after pressing the headphone icon in the top right a narrator will start naratting the current chapter(in the chosen language) the play and pause buttons should play and pause those narrations and the floating arrows should take you to the next chapter in the geeta, remove the mark as read and the green buttons, instead add mark as read button at the end of every chapter, and pressing it will mark the chapter as read and it should be indicated properly next to the chapters name in the menu. also make it so that you can login (login with google if you can). add nice transitions to the app and add a language chooser button that changes the languages of the meanings every time a user presses it (the ने button next to the Chapter we are currenly on should do that).
+and the main part, its an app so it should have a downloadable files for both android and iOS
+
+add a different navigation button at the end that shows more: and it should have Hanuman Chalisa, Ramayan, Mahabharat and more as coming soon.
+
+and the main part, its an app so it should have a downloadable files for both android and iOS

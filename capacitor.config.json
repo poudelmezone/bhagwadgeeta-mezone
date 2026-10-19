@@ -1,0 +1,23 @@
+{
+  "appId": "app.gita.bhagavad",
+  "appName": "Gita",
+  "webDir": ".",
+  "backgroundColor": "#0a0a0a",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0a0a0a"
+  },
+  "server": {
+    "url": "https://YOUR-DEPLOYED-HOST",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "backgroundColor": "#0a0a0a",
+      "showSpinner": false
+    }
+  }
+}

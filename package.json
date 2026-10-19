@@ -1,0 +1,16 @@
+{
+  "name": "gita-bhagavad",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bhagavad Gita reader — Sanskrit with meanings in English, हिन्दी and नेपाली, fully offline PWA.",
+  "type": "module",
+  "scripts": {
+    "serve": "node scripts/serve.mjs 4173",
+    "icons": "node scripts/gen-icons.mjs",
+    "android:setup": "npx @bubblewrap/cli init --manifest ./manifest.webmanifest",
+    "android:build": "npx @bubblewrap/cli build",
+    "ios:setup": "npx @capacitor/cli init 'Gita' app.gita.bhagavad --web-dir .",
+    "ios:add": "npx @capacitor/cli add ios",
+    "ios:sync": "npx @capacitor/cli sync ios"
+  }
+}
