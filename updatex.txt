@@ -11,7 +11,10 @@ look at the first image, make it so that the verses dont come around like this a
 in the 2nd image the reading progress icon is not centered, make it centered
 in many places of the app, there is Amen instead of the Om symbol, fix that too
 add nice animations when opening the app, and pressing back buttons should take u to the last page you were on, not quit the whole app
+and make a genuine sign in with google button that works and makes an account and saves your data with google
 
+
+we need to show the user the chapter number when he goes to select chapters, and when u search for a verse you need to take them to the verse (scrolled automatically to the verse) and also when u highlight a verse its going to the top of the chapter, it shouldnt do that and instead just sit at where it is right now. and change the emojis into icons and there should only be 4 navigations, today, geeta, guides and profile, move the more somewhere else by looking at other apps and when the back button is pressed it should take u to the previous page (not the previous page u were on but the page and came before this one) and also change the logo of the app to G:\MEZONE\Bhagwad Geeta\icons\icon-512.png
 
 
 
