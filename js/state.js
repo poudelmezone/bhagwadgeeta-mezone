@@ -21,6 +21,8 @@
     profileTab: 'highlights',
     refSort: 'number',
     chaptersRead: {},      // chapter number -> epoch ms (explicit "mark chapter as read")
+    tombstones: { notes: {}, prayers: {}, highlights: {} },
+    _savedAt: 0,
     auth: { provider: null, name: null, email: null, picture: null },
   };
 
@@ -35,13 +37,20 @@
         settings: Object.assign({}, DEFAULT.settings, parsed.settings || {}),
         streak: Object.assign({}, DEFAULT.streak, parsed.streak || {}),
         plan: Object.assign({}, DEFAULT.plan, parsed.plan || {}),
+        tombstones: Object.assign({}, DEFAULT.tombstones, parsed.tombstones || {}, {
+          notes: Object.assign({}, DEFAULT.tombstones.notes, (parsed.tombstones || {}).notes || {}),
+          prayers: Object.assign({}, DEFAULT.tombstones.prayers, (parsed.tombstones || {}).prayers || {}),
+          highlights: Object.assign({}, DEFAULT.tombstones.highlights, (parsed.tombstones || {}).highlights || {}),
+        }),
       });
     } catch (e) {
       return structuredClone(DEFAULT);
     }
   }
   function save() {
+    state._savedAt = Date.now();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    if (window.GitaCloud) window.GitaCloud.queueSave(state);
   }
   function reset() {
     state = structuredClone(DEFAULT);
@@ -152,8 +161,13 @@
   /* ---------- highlights / notes / prayers ---------- */
   const COLORS = ['#d98b2b', '#d94f4f', '#4f9d6b', '#4a7fc1', '#28b8d8', '#d6d51f', '#4ed07a', '#dcb37a', '#cd7fd0'];
   function setHighlight(k, color) {
-    if (!color) delete state.highlights[k];
-    else state.highlights[k] = { color, ts: Date.now() };
+    if (!color) {
+      delete state.highlights[k];
+      state.tombstones.highlights[k] = Date.now();
+    } else {
+      state.highlights[k] = { color, ts: Date.now() };
+      delete state.tombstones.highlights[k];
+    }
     save();
   }
   function addNote(ref, text) {
@@ -161,21 +175,25 @@
     if (!trimmed) return null;
     const note = { id: 'n' + Date.now(), ref, text: trimmed, ts: Date.now() };
     state.notes.unshift(note);
+    delete state.tombstones.notes[note.id];
     save();
     return note;
   }
   function deleteNote(id) {
     state.notes = state.notes.filter((n) => n.id !== id);
+    state.tombstones.notes[id] = Date.now();
     save();
   }
   function addPrayer(title, text) {
     const p = { id: 'p' + Date.now(), title: (title || 'Prayer').trim(), text: (text || '').trim(), ts: Date.now() };
     state.prayers.unshift(p);
+    delete state.tombstones.prayers[p.id];
     save();
     return p;
   }
   function deletePrayer(id) {
     state.prayers = state.prayers.filter((p) => p.id !== id);
+    state.tombstones.prayers[id] = Date.now();
     save();
   }
   function noteFor(k) { return state.notes.find((n) => n.ref === k); }

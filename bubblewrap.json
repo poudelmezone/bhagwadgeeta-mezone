@@ -1,8 +1,8 @@
 {
-  "packageId": "app.gita.bhagavad",
+  "packageId": "com.mezone.bhagawadgeeta",
   "host": "127.0.0.1",
-  "name": "Gita",
-  "launcherName": "Gita",
+  "name": "Bhagwad Geeta - Read, Learn, Understand",
+  "launcherName": "Bhagwad Geeta",
   "display": "standalone",
   "themeColor": "#0a0a0a",
   "navigationColor": "#0a0a0a",

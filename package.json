@@ -7,10 +7,18 @@
   "scripts": {
     "serve": "node scripts/serve.mjs 4173",
     "icons": "node scripts/gen-icons.mjs",
-    "android:setup": "npx @bubblewrap/cli init --manifest ./manifest.webmanifest",
-    "android:build": "npx @bubblewrap/cli build",
-    "ios:setup": "npx @capacitor/cli init 'Gita' app.gita.bhagavad --web-dir .",
+    "android:prepare": "node scripts/prepare-android.mjs",
+    "android:sync": "npm run android:prepare && npx cap sync android",
+    "android:build": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "ios:setup": "npx @capacitor/cli init 'Gita' com.mezone.bhagawadgeeta --web-dir .",
     "ios:add": "npx @capacitor/cli add ios",
     "ios:sync": "npx @capacitor/cli sync ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor-firebase/authentication": "^8.5.2",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
   }
 }

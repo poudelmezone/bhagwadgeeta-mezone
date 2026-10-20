@@ -39,6 +39,11 @@
     help: svg('<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3.5"/><path d="M12 17.5v.01"/>'),
     widget: svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
     heart: svg('<path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1l8.8 8.8 8.8-8.8a5 5 0 0 0 0-7.1z"/>'),
+    brain: svg('<path d="M12 5.2a3.2 3.2 0 0 0-6.2 1.1 3.5 3.5 0 0 0-.5 6.2 3.4 3.4 0 0 0 3.4 5.4 3.2 3.2 0 0 0 3.3 1.8zM12 5.2a3.2 3.2 0 0 1 6.2 1.1 3.5 3.5 0 0 1 .5 6.2 3.4 3.4 0 0 1-3.4 5.4 3.2 3.2 0 0 1-3.3 1.8zM8 9h1m-2 5h2m6-5h1m-1 5h2M12 5v14"/>'),
+    prayer: svg('<path d="M8 3v5m0 0a2 2 0 0 0-4 0v4c0 3 2 5 5 7l3 2 3-2c3-2 5-4 5-7V8a2 2 0 0 0-4 0V3m-8 5 2 6m8-6-2 6m-7 1 3 2 3-2"/>'),
+    library: svg('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21zM4 5.5v13A2.5 2.5 0 0 1 6.5 16H20M8 7h8m-8 4h8"/>'),
+    info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/>'),
+    mic: svg('<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8"/>'),
   };
 
   /* ---------------- helpers ---------------- */
@@ -104,17 +109,17 @@
       '</div>' +
 
       '<button class="row-card" data-go="#/prayer">' +
-      '<span class="row-thumb">🙏</span>' +
+      '<span class="row-thumb">' + ICON.prayer + '</span>' +
       '<span class="rc-body"><span class="rc-title">Today\'s Prayer</span><span class="rc-sub">' + esc(prayer.title) + '</span></span>' +
       '</button>' +
 
       '<button class="row-card" data-go="#/memorize">' +
-      '<span class="row-thumb">🧠</span>' +
+      '<span class="row-thumb">' + ICON.brain + '</span>' +
       '<span class="rc-body"><span class="rc-title">Memorize Verse</span><span class="rc-sub">' + esc(G.refLabel(memKey)) + '</span></span>' +
       '</button>' +
 
       '<button class="row-card" data-go="#/read/' + lastCh + '">' +
-      '<span class="row-thumb">📖</span>' +
+      '<span class="row-thumb">' + ICON.library + '</span>' +
       '<span class="rc-body"><span class="rc-title">Continue Reading</span><span class="rc-sub">' + esc(continueRef) + '</span></span>' +
       '</button>' +
 
@@ -504,7 +509,13 @@
       G.setHighlight(k, b.dataset.color || null);
       toast(b.dataset.color ? 'Highlight saved' : 'Highlight removed');
       closeSheet();
-      rerenderCurrent();
+      const verse = document.querySelector('.verse[data-key="' + k + '"]');
+      if (verse) {
+        const highlight = G.state.highlights[k];
+        verse.classList.toggle('hl', !!highlight);
+        if (highlight) verse.style.setProperty('--hl', highlight.color);
+        else verse.style.removeProperty('--hl');
+      }
     }));
     $('#shCopy').onclick = () => { copyText(verseExport(k)); closeSheet(); toast('Copied'); };
     $('#shShare').onclick = () => { closeSheet(); shareVerse(k); };
@@ -557,7 +568,7 @@
     const existing = G.noteFor(k);
     openModal(
       '<div class="sheet-title">Note — ' + esc(G.refLabel(k)) + '</div>' +
-      '<div class="sheet-sub">Your note is saved on this device.</div>' +
+      '<div class="sheet-sub">Your note is saved on this device and backed up to Google when you are signed in online.</div>' +
       '<textarea class="note-input" id="noteText" placeholder="Write your reflection…">' + esc(existing ? existing.text : '') + '</textarea>' +
       '<div class="grid2" style="margin-top:14px">' +
       '<button class="btn ghost" id="noteCancel">Cancel</button>' +
@@ -606,7 +617,6 @@
     const st = G.state;
     let list = G.chapters.slice();
     if (st.refSort === 'alpha') list.sort((a, b) => a.meaning.localeCompare(b.meaning));
-    const openCh = (G.state.last && G.state.last.ch) || 1;
     let html = '';
     const ql = q.toLowerCase();
     if (q && /^\d+\.\d+$/.test(q)) {
@@ -618,31 +628,23 @@
       if (!matches) continue;
       const read = G.chapterReadCount(c.n);
       const total = c.count + 1;
-      const isOpen = !q && c.n === openCh;
       const done = G.chapterDone(c.n);
       const dot = done ? '<span class="read-dot" title="Read"></span>' : '';
       html +=
-        '<div class="ref-section-head"><span class="name">' + esc(c.name) + dot + ' <span class="faint" style="font-weight:600;font-size:14px">' + esc(c.meaning) + '</span></span>' +
-        '<span class="count">' + (read + (G.state.introRead[c.n] ? 1 : 0)) + ' of ' + total + '</span></div>';
-      if (isOpen) {
-        let tiles = '<div class="ref-grid">';
-        tiles += '<button class="ref-tile intro' + (G.state.introRead[c.n] ? ' read' : '') + '" data-intro="' + c.n + '">Intro</button>';
-        for (const k of G.chapterKeys(c.n)) {
-          const v = +G.parseKey(k).v;
-          tiles += '<button class="ref-tile' + (G.state.read[k] ? ' read' : '') + '" data-ref="' + k + '">' + v + '</button>';
-        }
-        tiles += '</div>';
-        html += tiles;
-      } else {
-        html += '<button class="ref-collapsible" data-ch="' + c.n + '"><span>Chapter ' + c.n + dot + '</span>' + ICON.chev + '</button>';
-      }
+        '<button class="ref-chapter" data-ch="' + c.n + '">' +
+        '<span class="ref-chapter-title"><span class="ref-chapter-number">Chapter ' + c.n + '</span><span class="ref-chapter-name">' + esc(c.name) + dot + '</span>' +
+        '<span class="ref-chapter-meaning">' + esc(c.meaning) + '</span></span>' +
+        '<span class="ref-chapter-meta"><span>' + (read + (G.state.introRead[c.n] ? 1 : 0)) + ' of ' + total + '</span>' + ICON.chev + '</span></button>';
     }
     if (!html) html = '<div class="empty">Nothing matches “' + esc(q) + '”.<br>Try a chapter name like “devotion” or a reference like 2.47.</div>';
     const host = $('#refList');
     host.innerHTML = html;
-    host.querySelectorAll('[data-ref]').forEach((b) => (b.onclick = () => { G.pushHistory(b.dataset.ref); const t = G.parseKey(b.dataset.ref); go('#/read/' + t.ch + '/' + t.v); }));
-    host.querySelectorAll('[data-intro]').forEach((b) => (b.onclick = () => go('#/read/' + b.dataset.intro + '/intro')));
-    host.querySelectorAll('[data-ch]').forEach((b) => (b.onclick = () => { G.state.last = { ch: +b.dataset.ch, v: 1 }; G.save(); drawRefList(''); }));
+    host.querySelectorAll('[data-ch]').forEach((b) => (b.onclick = () => {
+      const ch = +b.dataset.ch;
+      G.state.last = { ch, v: 1 };
+      G.save();
+      go('#/read/' + ch);
+    }));
     host.querySelectorAll('[data-sref]').forEach((b) => (b.onclick = () => { const t = G.parseKey(b.dataset.sref); go('#/read/' + t.ch + '/' + t.v); }));
   }
 
@@ -981,7 +983,7 @@
       '</ul></div>' +
       '<div class="cmp-block"><div class="cb-lang">Data sources</div><ul class="license" style="padding-left:18px">' +
       m.sources.map((s) => '<li>' + esc(s) + '</li>').join('') + '</ul></div>' +
-      '<div class="cmp-block"><div class="cb-lang">Your data</div><div style="font-size:15.5px;line-height:1.6;color:var(--text-dim)">Everything you highlight, note and read stays in this browser (localStorage). Nothing is uploaded.</div></div>'
+      '<div class="cmp-block"><div class="cb-lang">Your data</div><div style="font-size:15.5px;line-height:1.6;color:var(--text-dim)">Your highlights, notes, prayers and reading progress stay on this device. When you sign in with Google, they are also backed up to your private Firebase account whenever you are online.</div></div>'
     );
   }
 
@@ -996,11 +998,11 @@
       '<div class="faint" style="font-size:13.5px;margin-top:2px">' + esc(p.src) + '</div></div>' +
       '<div style="display:flex;gap:2px">' +
       '<button class="tb-btn" data-bell="' + p.id + '" title="Set a reminder">' + ICON.bell + '</button>' +
-      '<button class="tb-btn" data-say="' + p.id + '" title="Listen">🎙</button></div></div>' +
+      '<button class="tb-btn" data-say="' + p.id + '" title="Listen">' + ICON.mic + '</button></div></div>' +
       '<div style="font-family:var(--serif);font-size:calc(21px * var(--fs));line-height:1.6;margin:14px 0 10px;white-space:pre-wrap">' + esc(p.skt) + '</div>' +
       '<div class="muted" style="font-size:15.5px;line-height:1.55">' + esc(p.meaning) + '</div>' +
       '<div class="prayer-actions">' +
-      '<button class="btn primary" data-amen="' + p.id + '">Amen</button>' +
+      '<button class="btn primary" data-om="' + p.id + '"><span class="om-symbol" aria-hidden="true">ॐ</span>Mark as practiced</button>' +
       '<button class="btn save-prayer" data-pray="' + p.id + '">' + ICON.bookmark + 'Save Prayer</button>' +
       '<button class="btn ghost" data-ppray="' + p.id + '">Write my own</button>' +
       '</div></div>'
@@ -1016,13 +1018,13 @@
       const p = G.PRAYERS.find((x) => x.id === b.dataset.say);
       G.stopSpeech(); G.speak(p.skt, 'sa'); toast('Chanting ' + p.title);
     }));
-    $('#view').querySelectorAll('[data-amen]').forEach((b) => (b.onclick = () => {
-      const p = G.PRAYERS.find((x) => x.id === b.dataset.amen);
-      b.classList.add('amen-on');
-      b.textContent = 'Amen ✓';
+    $('#view').querySelectorAll('[data-om]').forEach((b) => (b.onclick = () => {
+      const p = G.PRAYERS.find((x) => x.id === b.dataset.om);
+      b.classList.add('om-on');
+      b.innerHTML = '<span class="om-symbol" aria-hidden="true">ॐ</span>Practiced ✓';
       G.addPrayer(p.title, p.skt + '\n\n' + p.meaning);
       G.markRead(G.verseOfDay());
-      toast('Amen — recorded in your prayers');
+      toast('ॐ — recorded in your prayers');
     }));
     $('#view').querySelectorAll('[data-bell]').forEach((b) => (b.onclick = () => {
       b.classList.toggle('bell-on');
@@ -1257,11 +1259,11 @@
     const words = practiceWords(memKey);
     $('#view').innerHTML =
       '<h2 class="done-title">Time well spent!</h2>' +
-      '<div class="done-art" aria-hidden="true">🧘</div>' +
+      '<div class="done-art" aria-hidden="true">' + ICON.heart + '</div>' +
       '<div class="done-verse">' + esc(words.join(' ')) + '</div>' +
       '<div class="pc-ref" style="text-align:center">' + esc(G.refLabel(memKey).replace('BG ', '')) + '</div>' +
       '<button class="row-card" data-go="#/read/' + last.ch + '" style="margin-top:26px">' +
-      '<span class="row-thumb">📖</span><span class="rc-body"><span class="rc-title">Continue Reading</span>' +
+      '<span class="row-thumb">' + ICON.library + '</span><span class="rc-body"><span class="rc-title">Continue Reading</span>' +
       '<span class="rc-sub">Chapter ' + last.ch + '</span></span>' + ICON.chev + '</button>' +
       '<button class="btn primary" id="mDone" style="margin-top:18px">Done</button>';
     $('#view').querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => go(b.dataset.go)));
@@ -1309,21 +1311,21 @@
       ? '<div class="card auth-card" style="margin-bottom:18px">' +
         '<div class="auth-row">' +
         (a.picture ? '<img class="auth-pic" src="' + esc(a.picture) + '" alt="">' : '<span class="auth-pic auth-pic-fb">' + esc((a.name || '?').slice(0, 1).toUpperCase()) + '</span>') +
-        '<div class="auth-id"><div class="auth-name">' + esc(a.name || 'Signed in') + '</div><div class="auth-sub">' + esc(a.email || a.provider) + '</div></div>' +
+        '<div class="auth-id"><div class="auth-name">' + esc(a.name || 'Signed in') + '</div><div class="auth-sub">' + esc(GitaCloud && a.provider === 'google' ? GitaCloud.status() : (a.email || a.provider)) + '</div></div>' +
         '<button class="tb-btn" id="authSignOut" title="Sign out">' + ICON.logout + '</button>' +
         '</div></div>'
       : '<button class="card auth-cta" id="authCta">' +
         '<span class="auth-cta-ic">' + ICON.user + '</span>' +
         '<span class="auth-cta-body"><span class="auth-cta-title">Sign in</span>' +
-        '<span class="auth-cta-sub">Sync your highlights &amp; notes across devices</span></span>' +
+        '<span class="auth-cta-sub">' + esc(GitaCloud ? GitaCloud.status() : 'Google backup is being set up') + '</span></span>' +
         ICON.chev +
         '</button>';
 
     const items = [
-      { icon: '🚩', title: 'Hanuman Chalisa', sub: '40 verses of the beloved hymn', soon: true },
-      { icon: '🏹', title: 'Ramayan', sub: 'The epic of Shri Ram', soon: true },
-      { icon: '⚔️', title: 'Mahabharat', sub: 'The great war and its wisdom', soon: true },
-      { icon: '📿', title: 'More scriptures', sub: 'Vedas, Upanishads, Puranas & more', soon: true },
+      { icon: ICON.bolt, title: 'Hanuman Chalisa', sub: '40 verses of the beloved hymn', soon: true },
+      { icon: ICON.book, title: 'Ramayan', sub: 'The epic of Shri Ram', soon: true },
+      { icon: ICON.compare, title: 'Mahabharat', sub: 'The great war and its wisdom', soon: true },
+      { icon: ICON.library, title: 'More scriptures', sub: 'Vedas, Upanishads, Puranas & more', soon: true },
     ];
     const rows = items.map((it) =>
       '<div class="row-card coming-soon">' +
@@ -1333,15 +1335,15 @@
       '</div>'
     ).join('');
 
-    const installCard = '<button class="row-card" id="installCard"><span class="row-thumb">📲</span><span class="rc-body"><span class="rc-title">Install app</span><span class="rc-sub">Add the Gita to your home screen</span></span>' + ICON.chev + '</button>';
+    const installCard = '<button class="row-card" id="installCard"><span class="row-thumb">' + ICON.bookmark + '</span><span class="rc-body"><span class="rc-title">Install app</span><span class="rc-sub">Add the Gita to your home screen</span></span>' + ICON.chev + '</button>';
 
     $('#view').innerHTML =
       authCard +
       '<div class="section-label">The Gita</div>' +
-      '<button class="row-card" data-go="#/references"><span class="row-thumb">📖</span><span class="rc-body"><span class="rc-title">All chapters</span><span class="rc-sub">18 chapters · 700 verses</span></span>' + ICON.chev + '</button>' +
-      '<button class="row-card" data-go="#/search"><span class="row-thumb">🔍</span><span class="rc-body"><span class="rc-title">Search the Gita</span><span class="rc-sub">Sanskrit, English, हिन्दी, नेपाली</span></span>' + ICON.chev + '</button>' +
+      '<button class="row-card" data-go="#/references"><span class="row-thumb">' + ICON.library + '</span><span class="rc-body"><span class="rc-title">All chapters</span><span class="rc-sub">18 chapters · 700 verses</span></span>' + ICON.chev + '</button>' +
+      '<button class="row-card" data-go="#/search"><span class="row-thumb">' + ICON.search + '</span><span class="rc-body"><span class="rc-title">Search the Gita</span><span class="rc-sub">Sanskrit, English, हिन्दी, नेपाली</span></span>' + ICON.chev + '</button>' +
       installCard +
-      '<button class="row-card" data-go="#/about"><span class="row-thumb">ℹ️</span><span class="rc-body"><span class="rc-title">About &amp; sources</span><span class="rc-sub">Text, translations and licences</span></span>' + ICON.chev + '</button>' +
+      '<button class="row-card" data-go="#/about"><span class="row-thumb">' + ICON.info + '</span><span class="rc-body"><span class="rc-title">About &amp; sources</span><span class="rc-sub">Text, translations and licences</span></span>' + ICON.chev + '</button>' +
       '<div class="section-label">Coming soon</div>' + rows;
 
     $('#view').querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => go(b.dataset.go)));
@@ -1350,7 +1352,10 @@
       if (ok) toast('Installing…');
     };
     if ($('#authCta')) $('#authCta').onclick = openAuthSheet;
-    if ($('#authSignOut')) $('#authSignOut').onclick = () => { G.clearAuth(); toast('Signed out'); renderMore(); };
+    if ($('#authSignOut')) $('#authSignOut').onclick = async () => {
+      try { await GitaCloud.signOut(); toast('Signed out'); renderMore(); }
+      catch (_) { toast('Could not sign out. Try again.'); }
+    };
     $('#transport').classList.add('hidden');
   }
 
@@ -1364,29 +1369,37 @@
       '<div class="card" style="margin-bottom:14px"><div class="cb-lang" style="color:var(--amber);font-weight:800;font-size:12.5px;letter-spacing:.7px;text-transform:uppercase;margin-bottom:7px">Text sources</div>' +
       '<div style="font-size:15.5px;line-height:1.6;color:var(--text-dim)">Sanskrit text and meanings are drawn from public-domain translations. नेपाली meanings are OCR’d from a printed edition and may contain small errors.</div></div>' +
       '<div class="card"><div style="color:var(--amber);font-weight:800;font-size:12.5px;letter-spacing:.7px;text-transform:uppercase;margin-bottom:7px">Your data</div>' +
-      '<div style="font-size:15.5px;line-height:1.6;color:var(--text-dim)">Highlights, notes, prayers, reading progress and streaks are stored on this device. Nothing is uploaded.</div></div>';
+      '<div style="font-size:15.5px;line-height:1.6;color:var(--text-dim)">Highlights, notes, prayers, reading progress and streaks are stored on this device. Sign in with Google to back them up to your private account when online.</div></div>';
     $('#transport').classList.add('hidden');
   }
 
   /* ---------------- AUTH ---------------- */
-  // NOTE: a real "Sign in with Google" needs a server worker to hold the client
-  // secret and verify tokens (@freebuff/auth). This build stores a lightweight
-  // profile on-device so the sign-in UI, avatar and sign-out all work offline.
+  // Google sign-in stays unavailable until this app is connected to its Firebase
+  // project; never present a local placeholder profile as a Google account.
   function openAuthSheet() {
+    const nativeCloud = !!(window.GitaCloud && GitaCloud.isNative);
     openSheet(
       '<div class="sheet-grip"></div>' +
       '<div class="sheet-title">Sign in</div>' +
-      '<div class="sheet-sub">Keep your highlights, notes and streaks together.</div>' +
-      '<button class="btn google-btn" id="gSignin">' + ICON.google + 'Continue with Google</button>' +
+      '<div class="sheet-sub">Cloud backup needs Google sign-in and an internet connection. Reading stays available offline.</div>' +
+      '<button class="btn google-btn" id="gSignin" ' + (nativeCloud ? '' : 'disabled aria-disabled="true"') + '>' + ICON.google + (nativeCloud ? 'Continue with Google' : 'Google sign-in is available in the Android app') + '</button>' +
       '<button class="btn ghost" id="gGuest" style="margin-top:12px">Continue as guest on this device</button>' +
-      '<p class="license" style="margin-top:18px">Signing in on this device saves your profile locally. Cloud sync is coming soon.</p>'
+      '<p class="license" style="margin-top:18px">Your notes, reading progress and prayers stay on this device and sync to your Google account when you are online.</p>'
     );
-    $('#gSignin').onclick = () => {
-      const name = 'Gita Reader';
-      G.setAuth({ provider: 'google', name, email: 'reader@gita.app', picture: null });
-      closeSheet();
-      toast('Signed in with Google');
-      rerenderCurrent();
+    if ($('#gSignin') && nativeCloud) $('#gSignin').onclick = async () => {
+      const button = $('#gSignin');
+      button.disabled = true;
+      button.textContent = 'Signing in…';
+      try {
+        await GitaCloud.signIn();
+        closeSheet();
+        toast('Signed in and cloud backup is ready');
+        rerenderCurrent();
+      } catch (error) {
+        toast(error && error.message ? error.message : 'Google sign-in failed. Try again.');
+        button.disabled = false;
+        button.innerHTML = ICON.google + 'Try Google sign-in again';
+      }
     };
     $('#gGuest').onclick = () => {
       G.setAuth({ provider: 'guest', name: 'Guest', email: 'Saved on this device', picture: null });
@@ -1403,9 +1416,9 @@
     const head = authed
       ? '<div class="drawer-user">' +
         (a.picture ? '<img class="auth-pic" src="' + esc(a.picture) + '" alt="">' : '<span class="auth-pic auth-pic-fb">' + esc((a.name || '?').slice(0, 1).toUpperCase()) + '</span>') +
-        '<div class="auth-id"><div class="auth-name">' + esc(a.name || 'Signed in') + '</div><div class="auth-sub">' + esc(a.email || a.provider) + '</div></div></div>'
+        '<div class="auth-id"><div class="auth-name">' + esc(a.name || 'Signed in') + '</div><div class="auth-sub">' + esc(GitaCloud && a.provider === 'google' ? GitaCloud.status() : (a.email || a.provider)) + '</div></div></div>'
       : '<button class="drawer-user drawer-cta" id="drawerAuth"><span class="auth-pic auth-pic-fb">' + ICON.user + '</span>' +
-        '<div class="auth-id"><div class="auth-name">Sign in</div><div class="auth-sub">Sync your practice &amp; prayers</div></div>' + ICON.chev + '</button>';
+        '<div class="auth-id"><div class="auth-name">Sign in</div><div class="auth-sub">' + esc(GitaCloud ? GitaCloud.status() : 'Back up your practice') + '</div></div>' + ICON.chev + '</button>';
     const row = (id, icon, label) => '<button class="drawer-row" data-d="' + id + '">' + icon + '<span>' + label + '</span></button>';
     const items =
       row('support', ICON.heart, 'Spiritual Support') +
@@ -1419,6 +1432,7 @@
       row('publisher', ICON.user, 'About the Publisher') +
       '<div class="drawer-sep"></div>' +
       row('settings', ICON.gear, 'Settings') +
+      row('more', ICON.menu, 'More options') +
       row('references', ICON.search, 'References') +
       (authed ? row('signout', ICON.logout, 'Sign Out') : row('signin', ICON.user, 'Sign In')) +
       row('language', ICON.globe, 'Select a Language') +
@@ -1439,19 +1453,28 @@
     if (id === 'share') return shareApp();
     if (id === 'language') return openLangSheet(G.state.last ? G.state.last.ch : 1, 'read');
     if (id === 'signin') return openAuthSheet();
-    if (id === 'signout') { G.clearAuth(); toast('Signed out'); return render(); }
+    if (id === 'signout') {
+      GitaCloud.signOut().then(() => { toast('Signed out'); render(); }).catch(() => toast('Could not sign out. Try again.'));
+      return;
+    }
     if (id === 'widget') return toast('Widgets are coming in a future update');
     if (id === 'publisher') return toast('Published by the Gita project');
     if (id === 'settings') return openSettingsSheet();
     if (id === 'references') return go('#/references');
+    if (id === 'more') return go('#/more');
     if (id === 'reset') {
       openModal(
         '<div class="sheet-title">Erase all data?</div>' +
-        '<div class="sheet-sub">Highlights, notes, prayers, reading progress and streaks stored on this device will be removed.</div>' +
+        '<div class="sheet-sub">Highlights, notes, prayers, reading progress and streaks stored on this device will be removed. If signed in, your cloud backup will be erased too.</div>' +
         '<div class="grid2"><button class="btn ghost" id="rCancel">Cancel</button><button class="btn danger" id="rOk">Erase</button></div>'
       );
       $('#rCancel').onclick = closeModal;
-      $('#rOk').onclick = () => { G.reset(); applySettings(); closeModal(); go('#/today'); renderToday(); toast('All data erased'); };
+      $('#rOk').onclick = async () => {
+        const button = $('#rOk');
+        button.disabled = true;
+        await GitaCloud.deleteCloudState();
+        G.reset(); applySettings(); closeModal(); go('#/today'); renderToday(); toast('All data erased');
+      };
     }
   }
 
@@ -1505,7 +1528,7 @@
 
     let m;
     if (r === '/today' || r === '/' || r === '') { G.state.tab = 'today'; renderToday(); }
-    else if (r === '/more') { G.state.tab = 'more'; renderMore(); }
+    else if (r === '/more') { G.state.tab = 'profile'; renderMore(); }
     else if (r === '/about') renderAbout();
     else if (r === '/references') renderReferences();
     else if (r === '/search') renderSearch();
@@ -1526,7 +1549,7 @@
 
     G.save();
     updateTabs();
-    $('#view').scrollTop = r.startsWith('/read/') && !/\d+$/.test(r) ? $('#view').scrollTop : 0;
+    if (!r.startsWith('/read/')) $('#view').scrollTop = 0;
   }
 
   function updateTabs() {
@@ -1546,7 +1569,6 @@
       else if (tab === 'read') { const l = G.state.last; go('#/read/' + l.ch); }
       else if (tab === 'guides') go('#/guides');
       else if (tab === 'profile') go('#/profile');
-      else if (tab === 'more') go('#/more');
     });
   });
   $('#sheetScrim').addEventListener('click', closeSheet);
@@ -1559,7 +1581,26 @@
     toggleNarration(+cur[1]);
   });
   window.addEventListener('hashchange', render);
+  window.addEventListener('gita-cloud-restored', () => {
+    if (['/today', '/', '/more', '/profile', '/progress'].includes(route())) render();
+  });
   window.addEventListener('beforeunload', () => G.stopSpeech());
+
+  // Handle the Android system Back button inside the app instead of closing it.
+  const capacitor = window.capacitorExports && window.capacitorExports.Capacitor;
+  const nativeApp = window.capacitorApp && window.capacitorApp.App;
+  if (capacitor && capacitor.isNativePlatform() && nativeApp) {
+    nativeApp.addListener('backButton', ({ canGoBack }) => {
+      if (!$('#sheetLayer').classList.contains('hidden')) { closeSheet(); return; }
+      if (!$('#modalLayer').classList.contains('hidden')) { closeModal(); return; }
+      if (route() !== '/today' && route() !== '/' && route() !== '') {
+        if (canGoBack || window.history.length > 1) window.history.back();
+        else go('#/today');
+        return;
+      }
+      nativeApp.minimizeApp().catch(() => {});
+    });
+  }
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -1586,6 +1627,9 @@
 
   applySettings();
   G.touchStreak();
+  if (G.state.auth && G.state.auth.provider === 'google' && G.state.auth.email === 'reader@gita.app') G.clearAuth();
+  $('#app').classList.add('app-open');
   if (!location.hash) location.hash = '#/today';
   render();
+  if (window.GitaCloud) GitaCloud.initialize();
 })();

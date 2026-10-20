@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1019249176683",
+    "project_id": "bhagwad-geeta-mezone",
+    "storage_bucket": "bhagwad-geeta-mezone.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019249176683:android:7283e66836333831c6412e",
+        "android_client_info": {
+          "package_name": "com.mezone.bhagawadgeeta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1019249176683-5mokfhnfg1qgvus3aks72jhnoloohr65.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mezone.bhagawadgeeta",
+            "certificate_hash": "1a1d7390d3896ba46ff4667453cd673615e56c2c"
+          }
+        },
+        {
+          "client_id": "1019249176683-gsnoimajiofqno1usn4ad8f8h087r714.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8rl85H2XUBHisPeUEiLLavgVLzBPZkyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1019249176683-gsnoimajiofqno1usn4ad8f8h087r714.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

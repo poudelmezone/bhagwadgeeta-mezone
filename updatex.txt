@@ -4,3 +4,19 @@ and the main part, its an app so it should have a downloadable files for both an
 add a different navigation button at the end that shows more: and it should have Hanuman Chalisa, Ramayan, Mahabharat and more as coming soon.
 
 and the main part, its an app so it should have a downloadable files for both android and iOS
+
+
+
+look at the first image, make it so that the verses dont come around like this and only the chapters name comes and when u press that chapter name it takes you to that chapter
+in the 2nd image the reading progress icon is not centered, make it centered
+in many places of the app, there is Amen instead of the Om symbol, fix that too
+add nice animations when opening the app, and pressing back buttons should take u to the last page you were on, not quit the whole app
+
+
+
+
+
+
+
+
+

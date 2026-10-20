@@ -1,10 +1,11 @@
 /* Service worker — caches the app shell so the Gita opens offline. */
-const VERSION = 'gita-v4';
+const VERSION = 'gita-v5';
 const SHELL = [
   './',
   './index.html',
   './css/app.css',
   './js/state.js',
+  './js/firebase-cloud.js',
   './js/app.js',
   './data/gita.js',
   './manifest.webmanifest',

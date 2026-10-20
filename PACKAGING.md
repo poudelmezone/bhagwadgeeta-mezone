@@ -3,11 +3,33 @@
 The app is a fully offline Progressive Web App (PWA). There are three ways to ship it
 as a real store-installable app, from easiest to most native.
 
-## 0. Prerequisite — host the app
+## Android — offline APK
 
-The Android TWA and the iOS Capacitor build both load the app from a real HTTPS URL.
-Deploy this folder to any static host first (Netlify, Vercel, Cloudflare Pages, GitHub
-Pages, or your own server). Replace `YOUR-DEPLOYED-HOST` below with that host.
+The Capacitor Android app packages the web app, icons and Gita data inside the APK. It
+does not need a website or an internet connection to open or read the content.
+
+Install Node.js, JDK 21 and Android SDK Platform 36 plus Build Tools 36.0.0, then run:
+
+```bash
+npm install
+npm run android:build
+```
+
+The debug APK is written to
+`android/app/build/outputs/apk/debug/app-debug.apk`. Copy it to your phone and install
+it (Android may ask you to allow installs from that file app). This debug APK is for
+sideloading. For Play Store distribution, build and sign a release bundle in Android
+Studio.
+
+`npm run android:prepare` stages only the app shell and runtime assets into `www/`;
+`npm run android:sync` copies them into the native project. The generated `www/`
+folder is ignored by Git.
+
+## Hosted PWA / iOS prerequisite
+
+The hosted PWA and the iOS Capacitor setup below use a real HTTPS URL. Deploy this
+folder to any static host first (Netlify, Vercel, Cloudflare Pages, GitHub Pages, or
+your own server). The Android offline APK above does not use that host.
 
 The PWA already works as an installable app today:
 open it in Chrome/Edge → menu → **Install app**, or Safari on iOS → Share →
@@ -35,7 +57,7 @@ Outputs:
 - `app-release-signed.apk` → sideload / distribute directly
 
 The committed `bubblewrap.json` is a pre-filled starting config
-(`packageId: app.gita.bhagavad`). After `init` regenerates it with your host,
+(`packageId: com.mezone.bhagawadgeeta`). After `init` regenerates it with your host,
 adjust `host` / `*Url` fields to your domain and re-run `build`.
 
 **Digital Asset Links:** to hide the browser address bar, host
@@ -53,7 +75,7 @@ build into an IPA.
 npm i @capacitor/core @capacitor/cli @capacitor/ios
 
 # init (edit capacitor.config.json so server.url points at YOUR-DEPLOYED-HOST)
-npx @capacitor/cli init "Gita" app.gita.bhagavad --web-dir .
+npx @capacitor/cli init "Gita" com.mezone.bhagawadgeeta --web-dir .
 
 npx @capacitor/cli add ios
 npx @capacitor/cli sync ios

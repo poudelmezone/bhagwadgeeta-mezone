@@ -1,7 +1,7 @@
 {
-  "appId": "app.gita.bhagavad",
+  "appId": "com.mezone.bhagawadgeeta",
   "appName": "Gita",
-  "webDir": ".",
+  "webDir": "www",
   "backgroundColor": "#0a0a0a",
   "android": {
     "allowMixedContent": false
@@ -10,11 +10,10 @@
     "contentInset": "never",
     "backgroundColor": "#0a0a0a"
   },
-  "server": {
-    "url": "https://YOUR-DEPLOYED-HOST",
-    "cleartext": false
-  },
   "plugins": {
+    "FirebaseAuthentication": {
+      "providers": ["google.com"]
+    },
     "SplashScreen": {
       "backgroundColor": "#0a0a0a",
       "showSpinner": false
